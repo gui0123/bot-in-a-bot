@@ -1,8 +1,8 @@
+import consola, { Consola } from "consola";
 import { Client, Collection, Intents } from 'discord.js';
 import * as mongoose from "mongoose";
-import Logger from "../log/Logger";
 class BitClient extends Client {
-    private logger: Logger = new Logger();
+	private logger: Consola = consola;
 	public constructor() {
 		super({
 			ws: { intents: Intents.ALL },
@@ -11,5 +11,8 @@ class BitClient extends Client {
 			messageSweepInterval: 180,
 		});
 	};
+	public start(token: string) {
+		this.login(token).catch((e) => this.logger.error(e))
+	}
 }
 export { BitClient };
