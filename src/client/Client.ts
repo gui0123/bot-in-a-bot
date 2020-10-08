@@ -2,8 +2,7 @@ import consola, { Consola } from 'consola';
 import { Client, Collection, Intents } from 'discord.js';
 import glob from 'glob';
 import { promisify } from 'util';
-import * as mongoose from 'mongoose';
-import { join } from 'path';
+import mongoose from 'mongoose';
 import { Command } from '../interfaces/Command';
 import { Event } from '../interfaces/Event';
 const globPromise = promisify(glob);
@@ -11,7 +10,7 @@ class BitClient extends Client {
 	public logger: Consola = consola;
 	public commands: Collection<string, object> = new Collection();
 	public aliases: Collection<string, string> = new Collection();
-	public cooldowns: Collection<string, string> = new Collection();
+	public cooldowns: Collection<string, number> = new Collection();
 	public events: Collection<string, object> = new Collection();
 	public constructor() {
 		super({
@@ -21,8 +20,11 @@ class BitClient extends Client {
 			messageSweepInterval: 180,
 		});
 	}
-	public async start(token: string) {
+	public async start(token: string, mongoURI: string) {
 		this.login(token).catch((e) => this.logger.error(e));
+		mongoose
+			.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+			.catch((e) => this.logger.error(e));
 		this.logger.info(`Loading commands..`);
 		const commandFiles: string[] = await globPromise(
 			`${__dirname}/../commands/**/*{.js,.ts}`,
