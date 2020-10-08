@@ -5,13 +5,14 @@ import { promisify } from 'util';
 import * as mongoose from 'mongoose';
 import { join } from 'path';
 import { Command } from '../interfaces/Command';
+import { Event } from '../interfaces/Event';
 const globPromise = promisify(glob);
 class BitClient extends Client {
-	private logger: Consola = consola;
-	private commands: Collection<string, object> = new Collection();
-	private aliases: Collection<string, string> = new Collection();
-	private cooldowns: Collection<string, string> = new Collection();
-	private events: Collection<string, object> = new Collection();
+	public logger: Consola = consola;
+	public commands: Collection<string, object> = new Collection();
+	public aliases: Collection<string, string> = new Collection();
+	public cooldowns: Collection<string, string> = new Collection();
+	public events: Collection<string, object> = new Collection();
 	public constructor() {
 		super({
 			ws: { intents: Intents.ALL },
@@ -35,6 +36,11 @@ class BitClient extends Client {
 			if (cmd.aliases) {
 				cmd.aliases.map((alias: string) => this.aliases.set(alias, cmd.name));
 			}
+		});
+		eventFiles.map(async (eventFile: string) => {
+			const ev = (await import(eventFile)) as Event;
+			this.events.set(ev.name, ev);
+			this.on(ev.name, ev.run.bind(null, this));
 		});
 	}
 }
