@@ -10,5 +10,5 @@ export interface Command {
 	aliases?: string[];
 	description?: string;
 	cooldown?: string | number;
-	category?: string;
+	category: string;
 }

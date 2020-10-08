@@ -15,3 +15,4 @@ export const run: RunFunction = async (client, message, args) => {
 		),
 	);
 };
+export const category: string = 'info';

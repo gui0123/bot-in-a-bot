@@ -1,6 +1,8 @@
 import { Message } from 'discord.js';
 import { RunFunction } from '../../interfaces/Event';
-import { Command } from '../../interfaces/Command';
+interface Anything {
+	[key: string]: any;
+}
 export const name: string = 'message';
 export const run: RunFunction = async (client, message: Message) => {
 	if (
@@ -13,6 +15,13 @@ export const run: RunFunction = async (client, message: Message) => {
 		.slice(client.prefix.length)
 		.trim()
 		.split(/ +/g);
-	if (!client.commands.has(cmd.toLowerCase())) return;
-	(client.commands.get(cmd.toLowerCase()) as Command).run(client, message, args);
+	if (
+		!client.commands.has(cmd.toLowerCase()) &&
+		!client.commands.get(client.aliases.get(cmd.toLowerCase()))
+	)
+		return;
+	const command: Anything =
+		client.commands.get(cmd.toLowerCase()) ||
+		client.commands.get(client.aliases.get(cmd.toLowerCase()));
+	command.run(client, message, args);
 };

@@ -20,6 +20,7 @@ class BitClient extends Client {
 	public cooldowns: Collection<string, number> = new Collection();
 	public events: Collection<string, object> = new Collection();
 	public prefix: string = '<';
+	public categories: Set<string> = new Set();
 	public constructor() {
 		super({
 			ws: { intents: Intents.ALL },
@@ -33,7 +34,6 @@ class BitClient extends Client {
 		mongoose
 			.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 			.catch((e) => this.logger.error(e));
-		this.logger.info(`Loading commands..`);
 		const commandFiles: string[] = await globPromise(
 			`${__dirname}/../commands/**/*{.js,.ts}`,
 		);
@@ -46,6 +46,7 @@ class BitClient extends Client {
 			if (cmd.aliases) {
 				cmd.aliases.map((alias: string) => this.aliases.set(alias, cmd.name));
 			}
+			this.categories.add(cmd.category);
 		});
 		eventFiles.map(async (eventFile: string) => {
 			const ev = (await import(eventFile)) as Event;
