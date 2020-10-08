@@ -11,6 +11,7 @@ import glob from 'glob';
 import { promisify } from 'util';
 import mongoose from 'mongoose';
 import { Command } from '../interfaces/Command';
+import { Parser } from '../interfaces/Parser';
 import { Event } from '../interfaces/Event';
 const globPromise = promisify(glob);
 class BitClient extends Client {
@@ -19,8 +20,10 @@ class BitClient extends Client {
 	public aliases: Collection<string, string> = new Collection();
 	public cooldowns: Collection<string, number> = new Collection();
 	public events: Collection<string, object> = new Collection();
-	public prefix: string = '<';
+	public parsers: Collection<string, object> = new Collection();
+	public parserCache: Collection<string, unknown> = new Collection();
 	public categories: Set<string> = new Set();
+	public prefix: string = '<';
 	public constructor() {
 		super({
 			ws: { intents: Intents.ALL },
@@ -35,10 +38,13 @@ class BitClient extends Client {
 			.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 			.catch((e) => this.logger.error(e));
 		const commandFiles: string[] = await globPromise(
-			`${__dirname}/../commands/**/*{.js,.ts}`,
+			`${__dirname}/../commands/**/*{.js,.ts}`
 		);
 		const eventFiles: string[] = await globPromise(
-			`${__dirname}/../events/**/*{.js,.ts}`,
+			`${__dirname}/../events/**/*{.js,.ts}`
+		);
+		const parserFiles: string[] = await globPromise(
+			`${__dirname}/../events/**/*{.js,.ts}`
 		);
 		commandFiles.map(async (cmdFile: string) => {
 			const cmd = (await import(cmdFile)) as Command;
@@ -53,13 +59,17 @@ class BitClient extends Client {
 			this.events.set(ev.name, ev);
 			(ev.emitter || this).on(ev.name, ev.run.bind(null, this));
 		});
+		parserFiles.map(async (parseFile: string) => {
+			const parser = (await import(parseFile)) as Parser;
+			this.parsers.set(parser.name, parser);
+		});
 	}
 	public embed(data: MessageEmbedOptions, message: Message): MessageEmbed {
 		return new MessageEmbed({
 			...data,
 			color: 'RANDOM',
 			footer: {
-				text: message.author.tag,
+				text: `${message.author.tag} | Bot In A Bot`,
 				iconURL: message.author.displayAvatarURL({ dynamic: true, format: 'png' }),
 			},
 		});

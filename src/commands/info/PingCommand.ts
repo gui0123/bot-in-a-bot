@@ -2,7 +2,7 @@ import { RunFunction } from '../../interfaces/Command';
 export const name: string = 'ping';
 export const run: RunFunction = async (client, message, args) => {
 	const msg = await message.channel.send(
-		client.embed({ description: 'Ponging..' }, message),
+		client.embed({ description: 'Ponging..' }, message)
 	);
 	await msg.edit(
 		client.embed(
@@ -11,8 +11,8 @@ export const run: RunFunction = async (client, message, args) => {
 					msg.createdTimestamp - message.createdTimestamp
 				}\`MS`,
 			},
-			message,
-		),
+			message
+		)
 	);
 };
 export const category: string = 'info';

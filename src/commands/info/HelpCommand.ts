@@ -32,12 +32,12 @@ export const run: RunFunction = async (client, message, args) => {
 									: typeof data[1] == 'number'
 									? `\`${ms(data[1], { long: true })}\``
 									: `\`${data[1]}\``
-							}`,
+							}`
 					)
 					.join('\n'),
 			},
-			message,
-		),
+			message
+		)
 	);
 };
 export const category: string = 'info';
