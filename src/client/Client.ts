@@ -40,7 +40,7 @@ class BitClient extends Client {
 		eventFiles.map(async (eventFile: string) => {
 			const ev = (await import(eventFile)) as Event;
 			this.events.set(ev.name, ev);
-			this.on(ev.name, ev.run.bind(null, this));
+			(ev.emitter || this).on(ev.name, ev.run.bind(null, this));
 		});
 	}
 }
