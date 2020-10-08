@@ -1,5 +1,12 @@
 import consola, { Consola } from 'consola';
-import { Client, Collection, Intents } from 'discord.js';
+import {
+	Client,
+	Collection,
+	Intents,
+	Message,
+	MessageEmbed,
+	MessageEmbedOptions,
+} from 'discord.js';
 import glob from 'glob';
 import { promisify } from 'util';
 import mongoose from 'mongoose';
@@ -12,6 +19,7 @@ class BitClient extends Client {
 	public aliases: Collection<string, string> = new Collection();
 	public cooldowns: Collection<string, number> = new Collection();
 	public events: Collection<string, object> = new Collection();
+	public prefix: string = '<';
 	public constructor() {
 		super({
 			ws: { intents: Intents.ALL },
@@ -20,7 +28,7 @@ class BitClient extends Client {
 			messageSweepInterval: 180,
 		});
 	}
-	public async start(token: string, mongoURI: string) {
+	public async start(token: string, mongoURI: string): Promise<void> {
 		this.login(token).catch((e) => this.logger.error(e));
 		mongoose
 			.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -43,6 +51,16 @@ class BitClient extends Client {
 			const ev = (await import(eventFile)) as Event;
 			this.events.set(ev.name, ev);
 			(ev.emitter || this).on(ev.name, ev.run.bind(null, this));
+		});
+	}
+	public embed(data: MessageEmbedOptions, message: Message): MessageEmbed {
+		return new MessageEmbed({
+			...data,
+			color: 'RANDOM',
+			footer: {
+				text: message.author.tag,
+				iconURL: message.author.displayAvatarURL({ dynamic: true, format: 'png' }),
+			},
 		});
 	}
 }
