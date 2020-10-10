@@ -1,6 +1,5 @@
 import { Message } from 'discord.js';
 import { RunFunction } from '../../interfaces/Event';
-import { Parser } from '../../interfaces/Parser';
 import hasOwnProp from 'has-own-prop';
 interface Anything {
 	[key: string]: any;
