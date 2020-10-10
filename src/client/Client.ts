@@ -24,6 +24,13 @@ class BitClient extends Client {
 	public parserCache: Collection<string, unknown> = new Collection();
 	public categories: Set<string> = new Set();
 	public prefix: string = '<';
+	public commandModel = mongoose.model(
+		'commands',
+		new mongoose.Schema({
+			CommandName: String,
+			Content: String,
+		})
+	);
 	public constructor() {
 		super({
 			ws: { intents: Intents.ALL },
@@ -44,7 +51,7 @@ class BitClient extends Client {
 			`${__dirname}/../events/**/*{.js,.ts}`
 		);
 		const parserFiles: string[] = await globPromise(
-			`${__dirname}/../events/**/*{.js,.ts}`
+			`${__dirname}/../parsers/**/*{.js,.ts}`
 		);
 		commandFiles.map(async (cmdFile: string) => {
 			const cmd = (await import(cmdFile)) as Command;
@@ -61,7 +68,11 @@ class BitClient extends Client {
 		});
 		parserFiles.map(async (parseFile: string) => {
 			const parser = (await import(parseFile)) as Parser;
-			this.parsers.set(parser.name, parser);
+			this.parsers.set(parser.name, {
+				...parser,
+				startRegex: new RegExp(`{${parser.name}}`, 'gi'),
+				endRegex: new RegExp(`{/${parser.name}}`, 'gi'),
+			});
 		});
 	}
 	public embed(data: MessageEmbedOptions, message: Message): MessageEmbed {
